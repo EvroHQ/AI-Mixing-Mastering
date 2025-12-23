@@ -1,0 +1,71 @@
+# Node
+node_modules/
+.next/
+out/
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Audio processing temp
+/tmp/audio_processing/
+
+# Docker
+.dockerignore
+
+# Audio files (too large for git)
+*.wav
+*.mp3
+*.flac
+*.aiff
+*.ogg
+
+# Test outputs
+backend/test_output/
+backend/test_stems/
+
+# Redis binaries (download separately)
+backend/redis/
+
+# Uploads
+backend/uploads/
+frontend/public/uploads/

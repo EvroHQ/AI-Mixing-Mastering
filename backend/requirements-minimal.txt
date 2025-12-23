@@ -1,0 +1,20 @@
+# Minimal requirements for MixMaster backend
+# Install full requirements.txt only if you need audio processing
+
+# Core API
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Task Queue
+celery==5.3.6
+redis==5.0.1
+
+# Cloud Storage
+b2sdk==1.29.0
+
+# Utilities
+python-dotenv==1.0.0
+httpx==0.26.0
