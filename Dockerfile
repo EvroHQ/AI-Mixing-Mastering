@@ -27,8 +27,11 @@ ENV PORT=3000
 
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+
+# Copy public folder if it exists (use wildcard to make it optional)
+COPY --from=builder /app/public* ./public/
 
 EXPOSE 3000
 
 CMD ["node", "server.js"]
+
