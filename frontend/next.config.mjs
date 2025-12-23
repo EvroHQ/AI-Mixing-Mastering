@@ -1,27 +1,26 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  
-  // Enable Turbopack (default in Next.js 16)
-  turbopack: {
-    enabled: true,
-  },
+
+  // Enable standalone output for Docker
+  output: "standalone",
 
   // Environment variables
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+    NEXT_PUBLIC_API_URL:
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
   },
 
   // Image optimization
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**.backblazeb2.com',
+        protocol: "https",
+        hostname: "**.backblazeb2.com",
       },
       {
-        protocol: 'https',
-        hostname: '**.cloudflare.com',
+        protocol: "https",
+        hostname: "**.cloudflare.com",
       },
     ],
   },
@@ -30,15 +29,15 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path*',
+        source: "/:path*",
         headers: [
           {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on'
+            key: "X-DNS-Prefetch-Control",
+            value: "on",
           },
           {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN'
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
           },
         ],
       },
