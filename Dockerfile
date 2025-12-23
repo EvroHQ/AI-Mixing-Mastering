@@ -5,6 +5,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Build argument for API URL (passed from Railway)
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Copy frontend files
 COPY frontend/package*.json ./
 
@@ -14,7 +18,7 @@ RUN npm ci
 # Copy frontend source
 COPY frontend/ .
 
-# Build
+# Build with environment variable
 RUN npm run build
 
 # Production
@@ -34,4 +38,3 @@ COPY --from=builder /app/public* ./public/
 EXPOSE 3000
 
 CMD ["node", "server.js"]
-
