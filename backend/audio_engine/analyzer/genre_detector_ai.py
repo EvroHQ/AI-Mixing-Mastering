@@ -12,11 +12,12 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# Model URLs from Essentia's official repository (MAEST 2025 - newer and more accurate)
+# Model URLs from Essentia's official repository
+# Using EffNet model which has built-in audio preprocessing
 MODELS_BASE_URL = "https://essentia.upf.edu/models/classification-heads/genre_discogs400/"
 MODEL_FILES = {
-    "model": "genre_discogs400-discogs-maest-10s-pw-1.pb",
-    "metadata": "genre_discogs400-discogs-maest-10s-pw-1.json"
+    "model": "genre_discogs400-discogs-effnet-1.pb",
+    "metadata": "genre_discogs400-discogs-effnet-1.json"
 }
 
 # Mapping from Discogs genres to our simplified genres
@@ -156,24 +157,24 @@ class AIGenreDetector:
         return True
     
     def _load_model(self):
-        """Load the TensorFlow model."""
+        """Load the TensorFlow EffNet model for genre classification."""
         if self._model_loaded:
             return True
             
         try:
-            from essentia.standard import TensorflowPredict2D
+            from essentia.standard import TensorflowPredictEffnetDiscogs
             
             if not self._ensure_models_downloaded():
                 return False
             
             model_path = str(self.models_dir / MODEL_FILES["model"])
             
-            # Load the MAEST model for genre classification
-            # MAEST models use TensorflowPredict2D
-            self.embedding_model = TensorflowPredict2D(
+            # EffNet model with automatic audio preprocessing
+            self.embedding_model = TensorflowPredictEffnetDiscogs(
                 graphFilename=model_path,
-                output="model/Softmax"  # MAEST output layer
+                output="PartitionedCall:1"  # Genre activations
             )
+            logger.info("Using TensorflowPredictEffnetDiscogs")
             
             # Load metadata (labels) if available
             metadata_path = self.models_dir / MODEL_FILES["metadata"]
@@ -185,7 +186,7 @@ class AIGenreDetector:
                     logger.info(f"Loaded {len(self.labels)} genre labels from metadata")
             
             self._model_loaded = True
-            logger.info("Genre classification model (MAEST) loaded successfully")
+            logger.info("Genre classification model (EffNet) loaded successfully")
             return True
             
         except ImportError as e:
@@ -193,6 +194,8 @@ class AIGenreDetector:
             return False
         except Exception as e:
             logger.error(f"Error loading model: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def detect_genre(self, audio: np.ndarray) -> Dict:
@@ -239,12 +242,12 @@ class AIGenreDetector:
         return self._detect_with_analysis(audio)
     
     def _detect_with_ai(self, audio: np.ndarray) -> Optional[Dict]:
-        """Detect genre using the TensorFlow MAEST model."""
+        """Detect genre using the TensorFlow EffNet model."""
         try:
-            # Get predictions from MAEST model
+            # Get predictions from EffNet model
             predictions = self.embedding_model(audio)
             
-            # MAEST outputs softmax probabilities
+            # EffNet outputs genre activations
             # Average across time frames if multiple
             if predictions.ndim > 1:
                 avg_predictions = np.mean(predictions, axis=0)

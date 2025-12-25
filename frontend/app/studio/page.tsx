@@ -454,7 +454,7 @@ export default function StudioPage() {
               <div className="card text-center py-12">
                 {/* File name being analyzed */}
                 <p className="text-sm text-purple-400 font-mono mb-8">
-                  ._Analyzing audio...
+                  Analyzing stems...
                 </p>
 
                 {/* Animated AI Orb */}
@@ -468,8 +468,7 @@ export default function StudioPage() {
                   Detecting Genre...
                 </h2>
                 <p className="text-gray-400 text-sm max-w-md mx-auto">
-                  AI is analyzing tempo, rhythm patterns, and spectral
-                  characteristics to identify the optimal genre settings
+                  Analyzing stems to identify the optimal genre settings
                 </p>
 
                 {/* Progress bar */}
