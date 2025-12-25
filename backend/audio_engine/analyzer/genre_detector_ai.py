@@ -343,14 +343,34 @@ class AIGenreDetector:
         """Map a Discogs label to our simplified genre categories."""
         label = label.lower().strip()
         
-        # Check direct mapping first
-        if label in GENRE_MAPPING:
-            return GENRE_MAPPING[label]
+        # Discogs format is "Genre---Subgenre" - extract both parts
+        parts = label.replace("---", " ").replace("--", " ").replace("-", " ").split()
         
-        # Check if label contains any of our genre keywords
+        # Check each part against our mapping
+        for part in parts:
+            if part in GENRE_MAPPING:
+                return GENRE_MAPPING[part]
+        
+        # Check if any part contains our keywords
+        for part in parts:
+            for key, genre in GENRE_MAPPING.items():
+                if key in part or part in key:
+                    return genre
+        
+        # Check full label for keywords
         for key, genre in GENRE_MAPPING.items():
-            if key in label or label in key:
+            if key in label:
                 return genre
+        
+        # Default mappings for common Discogs top-level genres
+        if "electronic" in label:
+            return "edm"
+        if "rock" in label:
+            return "rock"
+        if "hip hop" in label or "hip-hop" in label:
+            return "hiphop"
+        if "jazz" in label or "classical" in label or "folk" in label:
+            return "acoustic"
         
         # Default to pop if no match
         return "pop"
