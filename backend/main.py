@@ -42,20 +42,34 @@ async def health_check():
 
 
 @app.post("/api/upload")
-async def upload_stems(files: List[UploadFile] = File(...)):
+async def upload_stems(
+    files: List[UploadFile] = File(...),
+    genre: str = None
+):
     """
     Upload audio stems for processing
     
     Args:
         files: List of audio files (WAV, AIFF, FLAC, MP3)
+        genre: Optional genre override (if None, auto-detect)
         
     Returns:
         job_id: Unique identifier for tracking the job
     """
     try:
         # Validate files
-        if len(files) > 12:
-            raise HTTPException(status_code=400, detail="Maximum 12 files allowed")
+        if len(files) > 32:
+            raise HTTPException(status_code=400, detail="Maximum 32 files allowed")
+        
+        # Validate genre if provided
+        if genre:
+            from audio_engine import GenrePresets
+            valid_genres = GenrePresets.list_genres()
+            if genre not in valid_genres:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Invalid genre. Valid options: {valid_genres}"
+                )
         
         # Generate job ID
         job_id = str(uuid.uuid4())
@@ -63,14 +77,12 @@ async def upload_stems(files: List[UploadFile] = File(...)):
         # Upload files to B2
         stem_urls = []
         for file in files:
-            # Validate file type
             if not file.filename.endswith(('.wav', '.aiff', '.flac', '.mp3')):
                 raise HTTPException(
                     status_code=400,
                     detail=f"Invalid file type: {file.filename}"
                 )
             
-            # Upload to B2
             file_content = await file.read()
             b2_url = b2_client.upload_file(
                 file_content,
@@ -79,24 +91,28 @@ async def upload_stems(files: List[UploadFile] = File(...)):
             )
             stem_urls.append(b2_url)
         
-        # Queue processing task and get task_id
-        task = process_audio_job.delay(job_id, stem_urls)
+        # Queue processing task with optional genre
+        task = process_audio_job.delay(job_id, stem_urls, genre_override=genre)
         
-        # Create job record with task_id
+        # Create job record
         jobs[job_id] = {
             "status": "queued",
             "progress": 0,
             "created_at": datetime.utcnow().isoformat(),
             "stem_count": len(files),
-            "task_id": task.id,  # Store Celery task ID
+            "task_id": task.id,
+            "genre_override": genre
         }
         
         return JSONResponse({
             "job_id": job_id,
             "status": "queued",
-            "message": f"Processing {len(files)} stems"
+            "message": f"Processing {len(files)} stems",
+            "genre_mode": "manual" if genre else "auto-detect"
         })
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -355,79 +371,15 @@ async def analyze_genre(files: List[UploadFile] = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+# Alias for backward compatibility
 @app.post("/api/upload-with-genre")
-async def upload_stems_with_genre(
+async def upload_stems_with_genre_alias(
     files: List[UploadFile] = File(...),
     genre: str = None
 ):
-    """
-    Upload audio stems with optional genre override
-    
-    Args:
-        files: List of audio files (WAV, AIFF, FLAC, MP3)
-        genre: Optional genre override (if None, auto-detect)
-        
-    Returns:
-        job_id: Unique identifier for tracking the job
-    """
-    try:
-        # Validate files
-        if len(files) > 12:
-            raise HTTPException(status_code=400, detail="Maximum 12 files allowed")
-        
-        # Validate genre if provided
-        from audio_engine import GenrePresets
-        valid_genres = GenrePresets.list_genres()
-        if genre and genre not in valid_genres:
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Invalid genre. Valid options: {valid_genres}"
-            )
-        
-        # Generate job ID
-        job_id = str(uuid.uuid4())
-        
-        # Upload files to B2
-        stem_urls = []
-        for file in files:
-            if not file.filename.endswith(('.wav', '.aiff', '.flac', '.mp3')):
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Invalid file type: {file.filename}"
-                )
-            
-            file_content = await file.read()
-            b2_url = b2_client.upload_file(
-                file_content,
-                f"{job_id}/{file.filename}",
-                bucket_name="mixmaster-input"
-            )
-            stem_urls.append(b2_url)
-        
-        # Queue processing task with genre override
-        task = process_audio_job.delay(job_id, stem_urls, genre_override=genre)
-        
-        # Create job record
-        jobs[job_id] = {
-            "status": "queued",
-            "progress": 0,
-            "created_at": datetime.utcnow().isoformat(),
-            "stem_count": len(files),
-            "task_id": task.id,
-            "genre_override": genre
-        }
-        
-        return JSONResponse({
-            "job_id": job_id,
-            "status": "queued",
-            "message": f"Processing {len(files)} stems" + (f" as {genre}" if genre else " (auto-detect genre)"),
-            "genre_mode": "manual" if genre else "auto-detect"
-        })
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    """Alias for /api/upload with genre parameter"""
+    return await upload_stems(files, genre)
 
 
 if __name__ == "__main__":

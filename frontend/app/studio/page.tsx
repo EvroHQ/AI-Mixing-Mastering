@@ -39,6 +39,19 @@ interface GenreDetectionResult {
   available_genres: string[];
 }
 
+// Utility function to get icon based on stem filename
+const getStemIcon = (filename: string): string => {
+  const name = filename.toLowerCase();
+  if (name.includes("vocal") || name.includes("voice")) return "🎤";
+  if (name.includes("drum") || name.includes("beat")) return "🥁";
+  if (name.includes("bass")) return "🎸";
+  if (name.includes("synth") || name.includes("key") || name.includes("piano"))
+    return "🎹";
+  if (name.includes("guitar")) return "🎸";
+  if (name.includes("perc")) return "🪘";
+  return "🎵";
+};
+
 export default function StudioPage() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [status, setStatus] = useState<
@@ -295,51 +308,34 @@ export default function StudioPage() {
                       </h3>
                       <button
                         onClick={() => setUploadedFiles([])}
-                        className="text-sm text-gray-500 hover:text-red-400 transition-colors"
+                        className="text-sm text-gray-500 hover:text-red-400 transition-colors cursor-pointer"
                       >
                         Clear all
                       </button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-                      {uploadedFiles.map((file, index) => {
-                        const name = file.name.toLowerCase();
-                        const getIcon = () => {
-                          if (name.includes("vocal") || name.includes("voice"))
-                            return "🎤";
-                          if (name.includes("drum") || name.includes("beat"))
-                            return "🥁";
-                          if (name.includes("bass")) return "🎸";
-                          if (
-                            name.includes("synth") ||
-                            name.includes("key") ||
-                            name.includes("piano")
-                          )
-                            return "🎹";
-                          if (name.includes("guitar")) return "🎸";
-                          if (name.includes("perc")) return "🪘";
-                          return "🎵";
-                        };
-                        return (
-                          <div
-                            key={index}
-                            className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 group"
+                      {uploadedFiles.map((file, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 group"
+                        >
+                          <span className="text-lg">
+                            {getStemIcon(file.name)}
+                          </span>
+                          <span className="text-sm text-gray-300 truncate flex-1">
+                            {file.name.replace(/\.(wav|mp3|aiff|flac)$/i, "")}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {(file.size / 1024 / 1024).toFixed(1)}MB
+                          </span>
+                          <button
+                            onClick={() => handleRemoveFile(index)}
+                            className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all"
                           >
-                            <span className="text-lg">{getIcon()}</span>
-                            <span className="text-sm text-gray-300 truncate flex-1">
-                              {file.name.replace(/\.(wav|mp3|aiff|flac)$/i, "")}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {(file.size / 1024 / 1024).toFixed(1)}MB
-                            </span>
-                            <button
-                              onClick={() => handleRemoveFile(index)}
-                              className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        );
-                      })}
+                            ✕
+                          </button>
+                        </div>
+                      ))}
                     </div>
 
                     {/* Start Analysis Button */}
@@ -567,38 +563,17 @@ export default function StudioPage() {
 
                 {/* Stem Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                  {uploadedFiles.map((f, i) => {
-                    // Determine stem type for icon
-                    const name = f.name.toLowerCase();
-                    const getIcon = () => {
-                      if (name.includes("vocal") || name.includes("voice"))
-                        return "🎤";
-                      if (name.includes("drum") || name.includes("beat"))
-                        return "🥁";
-                      if (name.includes("bass")) return "🎸";
-                      if (
-                        name.includes("synth") ||
-                        name.includes("key") ||
-                        name.includes("piano")
-                      )
-                        return "🎹";
-                      if (name.includes("guitar")) return "🎸";
-                      if (name.includes("perc")) return "🪘";
-                      return "🎵";
-                    };
-
-                    return (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors"
-                      >
-                        <span className="text-lg">{getIcon()}</span>
-                        <span className="text-sm text-gray-300 truncate flex-1">
-                          {f.name.replace(/\.(wav|mp3|aiff|flac)$/i, "")}
-                        </span>
-                      </div>
-                    );
-                  })}
+                  {uploadedFiles.map((f, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors"
+                    >
+                      <span className="text-lg">{getStemIcon(f.name)}</span>
+                      <span className="text-sm text-gray-300 truncate flex-1">
+                        {f.name.replace(/\.(wav|mp3|aiff|flac)$/i, "")}
+                      </span>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Action Button */}
