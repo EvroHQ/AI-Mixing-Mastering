@@ -72,6 +72,9 @@ export default function StudioPage() {
   const [showGenreSelector, setShowGenreSelector] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
+  // Master settings
+  const [targetLufs, setTargetLufs] = useState(-9); // Default: Club/loud
+
   // Fetch available genres on mount
   useEffect(() => {
     fetchGenres();
@@ -190,6 +193,9 @@ export default function StudioPage() {
     if (selectedGenre) {
       formData.append("genre", selectedGenre);
     }
+
+    // Add target LUFS
+    formData.append("target_lufs", targetLufs.toString());
 
     try {
       const response = await fetch(
@@ -442,18 +448,39 @@ export default function StudioPage() {
             </div>
           )}
 
-          {/* Analyzing Genre */}
+          {/* Analyzing Genre - Futuristic UI */}
           {status === "analyzing" && (
             <div className="animate-fade-in">
-              <div className="card text-center py-16">
-                <Loader2 className="w-16 h-16 mx-auto mb-6 animate-spin text-purple-400" />
-                <h2 className="text-2xl font-bold mb-4">
-                  Analyzing Your Music...
-                </h2>
-                <p className="text-gray-400">
-                  Our AI is detecting the genre and optimal settings for your
-                  track
+              <div className="card text-center py-12">
+                {/* File name being analyzed */}
+                <p className="text-sm text-purple-400 font-mono mb-8">
+                  ._Analyzing audio...
                 </p>
+
+                {/* Animated AI Orb */}
+                <div className="ai-orb-container mb-8">
+                  <div className="ai-orb-particles"></div>
+                  <div className="ai-orb"></div>
+                </div>
+
+                {/* Status text */}
+                <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
+                  Detecting Genre...
+                </h2>
+                <p className="text-gray-400 text-sm max-w-md mx-auto">
+                  AI is analyzing tempo, rhythm patterns, and spectral
+                  characteristics to identify the optimal genre settings
+                </p>
+
+                {/* Progress bar */}
+                <div className="mt-8 max-w-xs mx-auto">
+                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse"
+                      style={{ width: "60%" }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -566,6 +593,82 @@ export default function StudioPage() {
                       </p>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* LUFS Target Selector */}
+              <div className="card">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center border border-purple-500/30">
+                    <span className="text-2xl">🎚️</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Master Loudness</h3>
+                    <p className="text-sm text-gray-500">
+                      Choose your target loudness
+                    </p>
+                  </div>
+                </div>
+
+                {/* LUFS Value Display */}
+                <div className="text-center mb-6">
+                  <span className="text-5xl font-bold bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
+                    {targetLufs}
+                  </span>
+                  <span className="text-2xl text-gray-400 ml-2">LUFS</span>
+                </div>
+
+                {/* Two Options: Genre Recommended OR Streaming */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Genre Recommended */}
+                  <button
+                    onClick={() => {
+                      const genreLufs = selectedGenre
+                        ? genres.find((g) => g.id === selectedGenre)
+                            ?.target_lufs
+                        : detectedGenre?.recommended_settings?.target_lufs;
+                      if (genreLufs) setTargetLufs(genreLufs);
+                    }}
+                    className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                      targetLufs !== -14
+                        ? "border-purple-500 bg-purple-500/10"
+                        : "border-white/10 hover:border-white/30"
+                    }`}
+                  >
+                    <div className="text-2xl mb-2">🎧</div>
+                    <div className="font-bold">Genre Optimized</div>
+                    <div className="text-sm text-gray-400 mt-1">
+                      {selectedGenre
+                        ? `${
+                            genres.find((g) => g.id === selectedGenre)
+                              ?.target_lufs || -9
+                          } LUFS`
+                        : `${
+                            detectedGenre?.recommended_settings?.target_lufs ||
+                            -9
+                          } LUFS`}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-2">
+                      Best for clubs & DJs
+                    </div>
+                  </button>
+
+                  {/* Streaming */}
+                  <button
+                    onClick={() => setTargetLufs(-14)}
+                    className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                      targetLufs === -14
+                        ? "border-green-500 bg-green-500/10"
+                        : "border-white/10 hover:border-white/30"
+                    }`}
+                  >
+                    <div className="text-2xl mb-2">📱</div>
+                    <div className="font-bold">Streaming</div>
+                    <div className="text-sm text-gray-400 mt-1">-14 LUFS</div>
+                    <div className="text-xs text-gray-500 mt-2">
+                      Spotify, Apple Music
+                    </div>
+                  </button>
                 </div>
               </div>
 
