@@ -253,7 +253,7 @@ export default function StudioPage() {
       } catch (error) {
         console.error("Error polling status:", error);
       }
-    }, 2000);
+    }, 5000); // Poll every 5 seconds
   };
 
   const handleReset = () => {
@@ -737,7 +737,11 @@ export default function StudioPage() {
                 jobId={jobId}
                 stage={stage}
                 detail={detail}
-                genreName={detectedGenre?.genre_name}
+                genreName={
+                  selectedGenre
+                    ? genres.find((g) => g.id === selectedGenre)?.name
+                    : detectedGenre?.genre_name
+                }
               />
             </div>
           )}
