@@ -91,6 +91,7 @@ async def upload_stems(
             stem_urls.append(b2_url)
         
         # Queue processing task with optional genre
+        print(f"[API] Queuing job {job_id} with genre_override={genre}")
         task = process_audio_job.delay(job_id, stem_urls, genre_override=genre)
         
         # Create job record

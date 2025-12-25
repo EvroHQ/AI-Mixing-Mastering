@@ -300,7 +300,7 @@ export default function ProAudioPlayer({
   return (
     <div
       ref={containerRef}
-      className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-white/10 overflow-hidden"
+      className="rounded-2xl border border-white/10 overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-white/5">

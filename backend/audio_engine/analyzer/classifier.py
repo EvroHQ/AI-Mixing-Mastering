@@ -87,6 +87,13 @@ class SourceClassifier:
         """
         logger.info(f"Classifying stem: {name}")
         
+        # STEP 1: Try to classify by filename FIRST (most reliable!)
+        filename_class = self._classify_by_filename(name)
+        if filename_class:
+            logger.info(f"Classified {name} as {filename_class} (from filename)")
+            return filename_class, 1.0
+        
+        # STEP 2: Fall back to audio analysis
         # Convert stereo to mono if needed
         if audio.ndim > 1:
             audio = np.mean(audio, axis=0)
@@ -107,6 +114,93 @@ class SourceClassifier:
         logger.info(f"Classified {name} as {best_category} (confidence: {confidence:.2f})")
         
         return best_category, confidence
+    
+    def _classify_by_filename(self, name: str) -> str:
+        """
+        Classify stem by filename keywords
+        
+        Args:
+            name: Stem/file name
+            
+        Returns:
+            Classification or None if no match
+        """
+        name_lower = name.lower()
+        
+        # Kick/drums patterns
+        kick_patterns = ['kick', 'bd', 'bassdrum', '808', 'boom']
+        for p in kick_patterns:
+            if p in name_lower:
+                return 'kick'
+        
+        # Bass patterns
+        bass_patterns = ['bass', 'sub', 'low end', 'lowend']
+        for p in bass_patterns:
+            if p in name_lower:
+                return 'bass'
+        
+        # Snare patterns
+        snare_patterns = ['snare', 'sd', 'clap', 'rimshot', 'snr']
+        for p in snare_patterns:
+            if p in name_lower:
+                return 'snare'
+        
+        # Hi-hat patterns
+        hihat_patterns = ['hi-hat', 'hihat', 'hh', 'hat', 'shaker', 'cymbal', 'ride', 'crash']
+        for p in hihat_patterns:
+            if p in name_lower:
+                return 'hihat'
+        
+        # Percussion patterns
+        perc_patterns = ['perc', 'conga', 'bongo', 'tom', 'toms', 'tamb']
+        for p in perc_patterns:
+            if p in name_lower:
+                return 'percussion'
+        
+        # Drums (general)
+        drum_patterns = ['drum', 'drums', 'beat', 'loop']
+        for p in drum_patterns:
+            if p in name_lower:
+                return 'drums'
+        
+        # Vocal patterns
+        vocal_patterns = ['vocal', 'vox', 'voice', 'sing', 'adlib', 'hook', 'verse', 'chorus']
+        for p in vocal_patterns:
+            if p in name_lower:
+                return 'vocal'
+        
+        # Synth patterns
+        synth_patterns = ['synth', 'pad', 'lead', 'arp', 'pluck', 'stab', 'chord']
+        for p in synth_patterns:
+            if p in name_lower:
+                return 'synth'
+        
+        # Piano/keys patterns
+        piano_patterns = ['piano', 'keys', 'keyboard', 'organ', 'rhodes', 'wurli', 'ep']
+        for p in piano_patterns:
+            if p in name_lower:
+                return 'piano'
+        
+        # Guitar patterns
+        guitar_patterns = ['guitar', 'gtr', 'acoustic', 'electric', 'strum']
+        for p in guitar_patterns:
+            if p in name_lower:
+                return 'guitar'
+        
+        # Strings patterns
+        strings_patterns = ['string', 'violin', 'cello', 'orchestra']
+        for p in strings_patterns:
+            if p in name_lower:
+                return 'synth'  # Treat strings as synth for processing
+        
+        # FX patterns
+        fx_patterns = ['fx', 'effect', 'riser', 'impact', 'sweep', 'noise', 'atmos', 'ambient']
+        for p in fx_patterns:
+            if p in name_lower:
+                return 'fx'
+        
+        # No match - return None to trigger audio analysis
+        return None
     
     def _extract_features(self, audio: np.ndarray) -> Dict:
         """

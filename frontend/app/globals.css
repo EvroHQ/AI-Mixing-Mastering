@@ -92,7 +92,6 @@ h3 {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
 }
 
 .btn-primary:active {
@@ -641,15 +640,15 @@ h3 {
   min-height: 8px;
   background: linear-gradient(to top, #a855f7 0%, #ec4899 50%, #f472b6 100%);
   border-radius: 4px;
-  animation: equalizer-bounce 0.8s ease-in-out infinite;
+  animation: equalizer-bounce 1.5s ease-in-out infinite;
   box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
 }
 
 @keyframes equalizer-bounce {
   0%,
   100% {
-    transform: scaleY(0.3);
-    opacity: 0.7;
+    transform: scaleY(0.2);
+    opacity: 0.6;
   }
   50% {
     transform: scaleY(1);

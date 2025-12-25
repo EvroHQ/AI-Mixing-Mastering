@@ -752,7 +752,7 @@ export default function StudioPage() {
           {/* Complete Section */}
           {status === "complete" && downloadUrl && (
             <div className="animate-fade-in space-y-8">
-              <div className="card glow">
+              <div className="card">
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
