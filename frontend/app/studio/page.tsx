@@ -518,7 +518,7 @@ export default function StudioPage() {
                     <button
                       key={genre.id}
                       onClick={() => setSelectedGenre(genre.id)}
-                      className={`p-4 rounded-xl border-2 transition-all text-left ${
+                      className={`p-4 rounded-xl border-2 transition-all text-left cursor-pointer ${
                         selectedGenre === genre.id
                           ? "border-purple-500 bg-purple-500/10"
                           : "border-white/10 hover:border-white/30"

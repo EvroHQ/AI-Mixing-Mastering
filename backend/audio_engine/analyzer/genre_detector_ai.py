@@ -12,11 +12,11 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# Model URLs from Essentia's official repository
+# Model URLs from Essentia's official repository (MAEST 2025 - newer and more accurate)
 MODELS_BASE_URL = "https://essentia.upf.edu/models/classification-heads/genre_discogs400/"
 MODEL_FILES = {
-    "model": "genre_discogs400-discogs-effnet-bs64-1.pb",
-    "metadata": "genre_discogs400-discogs-effnet-bs64-1.json"
+    "model": "genre_discogs400-discogs-maest-10s-pw-1.pb",
+    "metadata": "genre_discogs400-discogs-maest-10s-pw-1.json"
 }
 
 # Mapping from Discogs genres to our simplified genres
@@ -161,25 +161,35 @@ class AIGenreDetector:
             return True
             
         try:
-            from essentia.standard import TensorflowPredictEffnetDiscogs, TensorflowPredict2D
+            from essentia.standard import TensorflowPredict2D
             
             if not self._ensure_models_downloaded():
                 return False
             
             model_path = str(self.models_dir / MODEL_FILES["model"])
             
-            # Load the embedding model
-            self.embedding_model = TensorflowPredictEffnetDiscogs(
+            # Load the MAEST model for genre classification
+            # MAEST models use TensorflowPredict2D
+            self.embedding_model = TensorflowPredict2D(
                 graphFilename=model_path,
-                output="PartitionedCall:1"
+                output="model/Softmax"  # MAEST output layer
             )
             
+            # Load metadata (labels) if available
+            metadata_path = self.models_dir / MODEL_FILES["metadata"]
+            if metadata_path.exists():
+                import json
+                with open(metadata_path, 'r') as f:
+                    metadata = json.load(f)
+                    self.labels = metadata.get('classes', [])
+                    logger.info(f"Loaded {len(self.labels)} genre labels from metadata")
+            
             self._model_loaded = True
-            logger.info("Genre classification model loaded successfully")
+            logger.info("Genre classification model (MAEST) loaded successfully")
             return True
             
-        except ImportError:
-            logger.warning("essentia-tensorflow not installed, falling back to basic detection")
+        except ImportError as e:
+            logger.warning(f"essentia-tensorflow not installed: {e}, falling back to basic detection")
             return False
         except Exception as e:
             logger.error(f"Error loading model: {e}")
@@ -229,33 +239,70 @@ class AIGenreDetector:
         return self._detect_with_analysis(audio)
     
     def _detect_with_ai(self, audio: np.ndarray) -> Optional[Dict]:
-        """Detect genre using the TensorFlow model."""
+        """Detect genre using the TensorFlow MAEST model."""
         try:
-            from essentia.standard import MonoLoader, TensorflowPredictEffnetDiscogs
+            # Get predictions from MAEST model
+            predictions = self.embedding_model(audio)
             
-            # Get embeddings
-            embeddings = self.embedding_model(audio)
-            
-            # The output gives us genre activations
-            # Average across time
-            avg_activations = np.mean(embeddings, axis=0)
+            # MAEST outputs softmax probabilities
+            # Average across time frames if multiple
+            if predictions.ndim > 1:
+                avg_predictions = np.mean(predictions, axis=0)
+            else:
+                avg_predictions = predictions
             
             # Get top predictions
-            top_indices = np.argsort(avg_activations)[-5:][::-1]
-            top_scores = avg_activations[top_indices]
+            top_indices = np.argsort(avg_predictions)[-5:][::-1]
+            top_scores = avg_predictions[top_indices]
             
-            # Map to our genres (simplified for now)
-            # In production, load the actual label mapping from JSON
-            detected_genre = "edm"  # Default
+            # Get the top genre label
+            if self.labels and len(self.labels) > 0:
+                top_label = self.labels[top_indices[0]] if top_indices[0] < len(self.labels) else "unknown"
+                
+                # Create all scores dict for top 5
+                all_scores = {}
+                for i, idx in enumerate(top_indices[:5]):
+                    if idx < len(self.labels):
+                        label = self.labels[idx].lower()
+                        all_scores[label] = float(top_scores[i])
+                
+                logger.info(f"AI top predictions: {list(all_scores.items())[:3]}")
+            else:
+                top_label = "electronic"
+                all_scores = {"electronic": float(top_scores[0])}
+            
+            # Map to our simplified genres
+            detected_genre = self._map_to_simple_genre(top_label.lower())
             confidence = float(top_scores[0]) if len(top_scores) > 0 else 0.5
             
-            logger.info(f"AI detected genre with confidence {confidence:.2f}")
+            logger.info(f"AI detected: '{top_label}' -> '{detected_genre}' with confidence {confidence:.2%}")
             
-            return self._format_result(detected_genre, confidence, "ai_model")
+            result = self._format_result(detected_genre, confidence, "ai_maest_2025")
+            result['raw_label'] = top_label
+            result['all_scores'] = all_scores
+            return result
             
         except Exception as e:
             logger.error(f"AI detection error: {e}")
+            import traceback
+            traceback.print_exc()
             return None
+    
+    def _map_to_simple_genre(self, label: str) -> str:
+        """Map a Discogs label to our simplified genre categories."""
+        label = label.lower().strip()
+        
+        # Check direct mapping first
+        if label in GENRE_MAPPING:
+            return GENRE_MAPPING[label]
+        
+        # Check if label contains any of our genre keywords
+        for key, genre in GENRE_MAPPING.items():
+            if key in label or label in key:
+                return genre
+        
+        # Default to pop if no match
+        return "pop"
     
     def _detect_with_analysis(self, audio: np.ndarray) -> Dict:
         """Fallback: Detect genre using tempo and spectral analysis."""
