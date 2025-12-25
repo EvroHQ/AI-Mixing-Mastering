@@ -294,7 +294,7 @@ class AIGenreDetector:
             
             # Stage 2: Pass embeddings through classification head
             predictions = self.genre_head(embeddings)
-            logger.info(f"Got predictions with shape: {predictions.shape}")
+            print(f"[AI] Got predictions with shape: {predictions.shape}")
             
             # Average across time frames if multiple
             if predictions.ndim > 1:
@@ -317,7 +317,7 @@ class AIGenreDetector:
                         label = self.labels[idx].lower()
                         all_scores[label] = float(top_scores[i])
                 
-                logger.info(f"AI top predictions: {list(all_scores.items())[:3]}")
+                print(f"[AI] Top predictions: {list(all_scores.items())[:5]}")
             else:
                 top_label = "electronic"
                 all_scores = {"electronic": float(top_scores[0])}
@@ -326,7 +326,7 @@ class AIGenreDetector:
             detected_genre = self._map_to_simple_genre(top_label.lower())
             confidence = float(top_scores[0]) if len(top_scores) > 0 else 0.5
             
-            logger.info(f"AI detected: '{top_label}' -> '{detected_genre}' with confidence {confidence:.2%}")
+            print(f"[AI] Detected: '{top_label}' -> '{detected_genre}' with confidence {confidence:.2%}")
             
             result = self._format_result(detected_genre, confidence, "ai_effnet")
             result['raw_label'] = top_label
