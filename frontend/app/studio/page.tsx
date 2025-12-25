@@ -416,7 +416,7 @@ export default function StudioPage() {
           {/* Analyzing Genre */}
           {status === "analyzing" && (
             <div className="animate-fade-in">
-              <div className="card glow text-center py-16">
+              <div className="card text-center py-16">
                 <Loader2 className="w-16 h-16 mx-auto mb-6 animate-spin text-purple-400" />
                 <h2 className="text-2xl font-bold mb-4">
                   Analyzing Your Music...
