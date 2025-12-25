@@ -13,9 +13,15 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 # Model URLs from Essentia's official repository
-# Using EffNet model which has built-in audio preprocessing
-MODELS_BASE_URL = "https://essentia.upf.edu/models/classification-heads/genre_discogs400/"
+# Using the full EffNet-Discogs model (not classification head) which processes raw audio
+MODELS_BASE_URL = "https://essentia.upf.edu/models/feature-extractors/discogs-effnet/"
 MODEL_FILES = {
+    "model": "discogs-effnet-bs64-1.pb",
+}
+
+# Genre classification head URL (used with embeddings from above)
+GENRE_HEAD_URL = "https://essentia.upf.edu/models/classification-heads/genre_discogs400/"
+GENRE_HEAD_FILES = {
     "model": "genre_discogs400-discogs-effnet-1.pb",
     "metadata": "genre_discogs400-discogs-effnet-1.json"
 }
@@ -141,52 +147,83 @@ class AIGenreDetector:
         self._model_loaded = False
         
     def _ensure_models_downloaded(self):
-        """Download models if not present."""
-        model_path = self.models_dir / MODEL_FILES["model"]
-        
-        if not model_path.exists():
-            logger.info("Downloading genre classification model... (this only happens once)")
+        """Download both embedding model and classification head if not present."""
+        # Download embedding model
+        embedding_path = self.models_dir / MODEL_FILES["model"]
+        if not embedding_path.exists():
+            logger.info("Downloading EffNet embedding model... (this only happens once)")
             try:
                 url = MODELS_BASE_URL + MODEL_FILES["model"]
-                urllib.request.urlretrieve(url, model_path)
-                logger.info(f"Model downloaded to {model_path}")
+                urllib.request.urlretrieve(url, embedding_path)
+                logger.info(f"Embedding model downloaded to {embedding_path}")
             except Exception as e:
-                logger.error(f"Failed to download model: {e}")
+                logger.error(f"Failed to download embedding model: {e}")
                 return False
+        
+        # Download classification head
+        head_path = self.models_dir / GENRE_HEAD_FILES["model"]
+        if not head_path.exists():
+            logger.info("Downloading genre classification head...")
+            try:
+                url = GENRE_HEAD_URL + GENRE_HEAD_FILES["model"]
+                urllib.request.urlretrieve(url, head_path)
+                logger.info(f"Classification head downloaded to {head_path}")
+            except Exception as e:
+                logger.error(f"Failed to download classification head: {e}")
+                return False
+        
+        # Download metadata
+        metadata_path = self.models_dir / GENRE_HEAD_FILES["metadata"]
+        if not metadata_path.exists():
+            try:
+                url = GENRE_HEAD_URL + GENRE_HEAD_FILES["metadata"]
+                urllib.request.urlretrieve(url, metadata_path)
+                logger.info(f"Metadata downloaded to {metadata_path}")
+            except Exception as e:
+                logger.warning(f"Failed to download metadata: {e}")
         
         return True
     
     def _load_model(self):
-        """Load the TensorFlow EffNet model for genre classification."""
+        """Load the TensorFlow EffNet embedding model and genre classification head."""
         if self._model_loaded:
             return True
             
         try:
-            from essentia.standard import TensorflowPredictEffnetDiscogs
+            from essentia.standard import TensorflowPredictEffnetDiscogs, TensorflowPredict2D
             
             if not self._ensure_models_downloaded():
                 return False
             
-            model_path = str(self.models_dir / MODEL_FILES["model"])
+            embedding_path = str(self.models_dir / MODEL_FILES["model"])
+            head_path = str(self.models_dir / GENRE_HEAD_FILES["model"])
             
-            # EffNet model with automatic audio preprocessing
+            # Load embedding model (processes raw audio -> embeddings)
             self.embedding_model = TensorflowPredictEffnetDiscogs(
-                graphFilename=model_path,
-                output="PartitionedCall:1"  # Genre activations
+                graphFilename=embedding_path,
+                output="PartitionedCall:1"  # Embeddings output
             )
-            logger.info("Using TensorflowPredictEffnetDiscogs")
+            logger.info("Loaded EffNet embedding model")
             
-            # Load metadata (labels) if available
-            metadata_path = self.models_dir / MODEL_FILES["metadata"]
+            # Load classification head (embeddings -> genre probabilities)
+            self.genre_head = TensorflowPredict2D(
+                graphFilename=head_path,
+                input="serving_default_model_Placeholder",
+                output="PartitionedCall:0"
+            )
+            logger.info("Loaded genre classification head")
+            
+            # Load metadata (labels)
+            metadata_path = self.models_dir / GENRE_HEAD_FILES["metadata"]
             if metadata_path.exists():
                 import json
                 with open(metadata_path, 'r') as f:
                     metadata = json.load(f)
                     self.labels = metadata.get('classes', [])
-                    logger.info(f"Loaded {len(self.labels)} genre labels from metadata")
+                    logger.info(f"Loaded {len(self.labels)} genre labels")
             
             self._model_loaded = True
-            logger.info("Genre classification model (EffNet) loaded successfully")
+            logger.info("Genre classification pipeline loaded successfully")
             return True
             
         except ImportError as e:
@@ -242,12 +279,16 @@ class AIGenreDetector:
         return self._detect_with_analysis(audio)
     
     def _detect_with_ai(self, audio: np.ndarray) -> Optional[Dict]:
-        """Detect genre using the TensorFlow EffNet model."""
+        """Detect genre using the two-stage EffNet pipeline."""
         try:
-            # Get predictions from EffNet model
-            predictions = self.embedding_model(audio)
+            # Stage 1: Get embeddings from EffNet model
+            embeddings = self.embedding_model(audio)
+            logger.info(f"Got embeddings with shape: {embeddings.shape}")
             
-            # EffNet outputs genre activations
+            # Stage 2: Pass embeddings through classification head
+            predictions = self.genre_head(embeddings)
+            logger.info(f"Got predictions with shape: {predictions.shape}")
+            
             # Average across time frames if multiple
             if predictions.ndim > 1:
                 avg_predictions = np.mean(predictions, axis=0)
@@ -280,7 +321,7 @@ class AIGenreDetector:
             
             logger.info(f"AI detected: '{top_label}' -> '{detected_genre}' with confidence {confidence:.2%}")
             
-            result = self._format_result(detected_genre, confidence, "ai_maest_2025")
+            result = self._format_result(detected_genre, confidence, "ai_effnet")
             result['raw_label'] = top_label
             result['all_scores'] = all_scores
             return result
