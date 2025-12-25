@@ -325,7 +325,11 @@ async def analyze_genre(files: List[UploadFile] = File(...)):
         Detected genre with confidence score and recommended settings
     """
     import tempfile
-    from audio_engine import AudioPipeline
+    import shutil
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    logger.info(f"Starting genre analysis with {len(files)} files")
     
     try:
         # Create temp directory for files
@@ -335,24 +339,34 @@ async def analyze_genre(files: List[UploadFile] = File(...)):
         for file in files:
             # Validate file type
             if not file.filename.endswith(('.wav', '.aiff', '.flac', '.mp3')):
+                logger.warning(f"Skipping invalid file: {file.filename}")
                 continue
             
-            # Save to temp file
+            logger.info(f"Processing file: {file.filename}")
+            
+            # Save to temp file using streaming to avoid memory issues
             temp_path = os.path.join(temp_dir, file.filename)
-            content = await file.read()
             with open(temp_path, 'wb') as f:
-                f.write(content)
+                # Stream in chunks to avoid loading entire file in memory
+                while chunk := await file.read(1024 * 1024):  # 1MB chunks
+                    f.write(chunk)
             temp_files.append(temp_path)
+            logger.info(f"Saved temp file: {temp_path}")
         
         if not temp_files:
+            shutil.rmtree(temp_dir, ignore_errors=True)
             raise HTTPException(status_code=400, detail="No valid audio files")
         
+        logger.info(f"Analyzing {len(temp_files)} files for genre")
+        
         # Analyze genre
+        from audio_engine import AudioPipeline
         pipeline = AudioPipeline()
         result = pipeline.analyze_genre_only(temp_files)
         
+        logger.info(f"Genre detected: {result.get('genre_name', 'unknown')}")
+        
         # Cleanup temp files
-        import shutil
         shutil.rmtree(temp_dir, ignore_errors=True)
         
         return JSONResponse({
@@ -366,7 +380,12 @@ async def analyze_genre(files: List[UploadFile] = File(...)):
             "analysis": result.get('analysis', {})  # For debugging
         })
         
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Genre analysis error: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
