@@ -81,19 +81,17 @@ export default function ContactPage() {
           {isSubmitted ? (
             /* Success Message */
             <div className="animate-fade-in">
-              <div className="card glow text-center py-16">
-                <div className="w-20 h-20 mx-auto rounded-full bg-green-500/20 flex items-center justify-center mb-6">
-                  <CheckCircle2 className="w-10 h-10 text-green-500" />
-                </div>
-                <h2 className="text-3xl font-bold mb-4">Message Sent!</h2>
-                <p className="text-gray-400 mb-8 max-w-md mx-auto">
-                  Thank you for reaching out. We&apos;ll get back to you as soon
-                  as possible.
-                </p>
-                <Link href="/" className="btn btn-primary">
-                  Back to Home
-                </Link>
+              <div className="w-20 h-20 mx-auto rounded-full bg-green-500/20 flex items-center justify-center mb-6">
+                <CheckCircle2 className="w-10 h-10 text-green-500" />
               </div>
+              <h2 className="text-3xl font-bold mb-4">Message Sent!</h2>
+              <p className="text-gray-400 mb-8 max-w-md mx-auto">
+                Thank you for reaching out. We&apos;ll get back to you as soon
+                as possible.
+              </p>
+              <Link href="/" className="btn btn-primary">
+                Back to Home
+              </Link>
             </div>
           ) : (
             /* Contact Form */

@@ -14,8 +14,15 @@ import time
 from .mixer import MixEngine
 from .masterer.simple_master import SimpleMasteringEngine
 from .analyzer import LoudnessAnalyzer
-from .analyzer.genre_detector import GenreDetector
 from .presets import GenrePresets
+
+# Try to use AI genre detector, fallback to analysis-based
+try:
+    from .analyzer.genre_detector_ai import AIGenreDetector as GenreDetector
+    _using_ai_detector = True
+except ImportError:
+    from .analyzer.genre_detector import GenreDetector
+    _using_ai_detector = False
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +42,11 @@ class AudioPipeline:
         self.mastering_engine = SimpleMasteringEngine(sample_rate)
         self.loudness_analyzer = LoudnessAnalyzer(sample_rate)
         self.genre_detector = GenreDetector(sample_rate)
+        
+        if _using_ai_detector:
+            logger.info("Using AI-powered genre detector (Essentia TensorFlow)")
+        else:
+            logger.info("Using analysis-based genre detector (fallback)")
     
     def process(
         self,

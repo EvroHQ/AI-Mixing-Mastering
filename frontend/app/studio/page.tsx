@@ -235,7 +235,7 @@ export default function StudioPage() {
       </header>
 
       {/* Main Content */}
-      <main className="pt-32 pb-16 px-6">
+      <main className="pt-32 pb-16 px-6 relative z-10">
         <div className="container mx-auto max-w-5xl">
           {/* Title */}
           <div className="text-center mb-16 animate-fade-in">
@@ -251,7 +251,7 @@ export default function StudioPage() {
           {/* Upload Section - Before Genre Detection */}
           {status === "idle" && !showGenreSelector && (
             <div className="animate-fade-in space-y-8">
-              <div className="card glow">
+              <div className="card">
                 <div className="flex items-center gap-3 mb-6">
                   <Sparkles className="w-6 h-6 text-purple-400" />
                   <h2 className="text-2xl font-bold">
@@ -628,7 +628,7 @@ export default function StudioPage() {
       </main>
 
       {/* Footer */}
-      <footer className="py-16 px-6 border-t border-white/10">
+      <footer className="py-16 px-6 border-t border-white/10 bg-black relative z-10">
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div>

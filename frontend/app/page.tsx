@@ -71,13 +71,9 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <section className="pt-40 pb-32 px-6 relative overflow-hidden">
-        {/* Gradient Orbs */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
-
         <div className="container mx-auto max-w-6xl relative z-10">
           <div className="text-center animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0a0a0a] border border-white/10 mb-8">
               <Sparkles className="w-4 h-4" />
               <span className="text-sm font-medium">
                 AI-Powered Audio Processing
@@ -122,7 +118,7 @@ export default function HomePage() {
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              <div className="p-6 rounded-2xl bg-white/5 border border-white/5 text-center animate-scale-in hover:border-purple-500/20 transition-colors">
+              <div className="p-6 rounded-2xl bg-[#0a0a0a] border border-white/10 text-center hover:border-purple-500/20 transition-colors">
                 <div className="text-4xl font-bold mb-1 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                   2.5min
                 </div>
@@ -130,10 +126,7 @@ export default function HomePage() {
                   Avg. Processing Time
                 </div>
               </div>
-              <div
-                className="p-6 rounded-2xl bg-white/5 border border-white/5 text-center animate-scale-in hover:border-purple-500/20 transition-colors"
-                style={{ animationDelay: "0.1s" }}
-              >
+              <div className="p-6 rounded-2xl bg-[#0a0a0a] border border-white/10 text-center hover:border-purple-500/20 transition-colors">
                 <div className="text-4xl font-bold mb-1 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                   -10 LUFS
                 </div>
@@ -141,10 +134,7 @@ export default function HomePage() {
                   Streaming Standard
                 </div>
               </div>
-              <div
-                className="p-6 rounded-2xl bg-white/5 border border-white/5 text-center animate-scale-in hover:border-purple-500/20 transition-colors"
-                style={{ animationDelay: "0.2s" }}
-              >
+              <div className="p-6 rounded-2xl bg-[#0a0a0a] border border-white/10 text-center hover:border-purple-500/20 transition-colors">
                 <div className="text-4xl font-bold mb-1 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                   $6.99
                 </div>
@@ -158,7 +148,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-32 px-6">
+      <section id="features" className="py-32 px-6 relative z-10">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-20">
             <h2 className="text-5xl font-bold mb-6">Professional Features</h2>
@@ -226,8 +216,7 @@ export default function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-32 px-6 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/5 to-transparent"></div>
+      <section id="how-it-works" className="py-32 px-6 relative z-10">
         <div className="container mx-auto max-w-6xl relative z-10">
           <div className="text-center mb-20">
             <h2 className="text-5xl font-bold mb-6">How It Works</h2>
@@ -238,7 +227,7 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-4 gap-6">
             <div className="text-center group">
-              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 group-hover:border-purple-500/30 transition-all">
+              <div className="w-16 h-16 rounded-2xl bg-[#0a0a0a] border border-white/10 flex items-center justify-center mx-auto mb-4 group-hover:border-purple-500/30 transition-all">
                 <Upload className="w-7 h-7 text-purple-400" />
               </div>
               <div className="text-xs text-purple-400 font-bold mb-2">
@@ -249,7 +238,7 @@ export default function HomePage() {
             </div>
 
             <div className="text-center group">
-              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 group-hover:border-blue-500/30 transition-all">
+              <div className="w-16 h-16 rounded-2xl bg-[#0a0a0a] border border-white/10 flex items-center justify-center mx-auto mb-4 group-hover:border-blue-500/30 transition-all">
                 <AudioWaveform className="w-7 h-7 text-blue-400" />
               </div>
               <div className="text-xs text-blue-400 font-bold mb-2">STEP 2</div>
@@ -258,7 +247,7 @@ export default function HomePage() {
             </div>
 
             <div className="text-center group">
-              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 group-hover:border-pink-500/30 transition-all">
+              <div className="w-16 h-16 rounded-2xl bg-[#0a0a0a] border border-white/10 flex items-center justify-center mx-auto mb-4 group-hover:border-pink-500/30 transition-all">
                 <Sliders className="w-7 h-7 text-pink-400" />
               </div>
               <div className="text-xs text-pink-400 font-bold mb-2">STEP 3</div>
@@ -267,7 +256,7 @@ export default function HomePage() {
             </div>
 
             <div className="text-center group">
-              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 group-hover:border-green-500/30 transition-all">
+              <div className="w-16 h-16 rounded-2xl bg-[#0a0a0a] border border-white/10 flex items-center justify-center mx-auto mb-4 group-hover:border-green-500/30 transition-all">
                 <Download className="w-7 h-7 text-green-400" />
               </div>
               <div className="text-xs text-green-400 font-bold mb-2">
@@ -281,7 +270,7 @@ export default function HomePage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-32 px-6">
+      <section id="pricing" className="py-32 px-6 relative z-10">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold mb-6">Simple Pricing</h2>
@@ -382,7 +371,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 px-6 border-t border-white/10">
+      <footer className="py-16 px-6 border-t border-white/10 bg-black relative z-10">
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div>

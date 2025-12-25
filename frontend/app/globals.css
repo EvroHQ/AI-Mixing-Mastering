@@ -155,7 +155,7 @@ h3 {
 .glass {
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .text-gradient {
@@ -184,15 +184,15 @@ h3 {
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.6s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .animate-slide-up {
-  animation: slideUp 0.6s ease-out;
+  animation: slideUp 0.3s ease-out;
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.5s ease-out;
+  animation: scaleIn 0.3s ease-out;
 }
 
 /* Animations */
@@ -227,14 +227,45 @@ h3 {
   }
 }
 
-/* Grid Background Effect */
+/* Background Effect - Dots in center (~800px), fade to black on sides */
 .grid-background {
-  background-image: linear-gradient(
-      rgba(255, 255, 255, 0.03) 1px,
-      transparent 1px
-    ),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 50px 50px;
+  position: relative;
+  background-color: #000000;
+}
+
+.grid-background::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2000px;
+  max-width: 100%;
+  bottom: 0;
+  /* Dots pattern */
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.05) 1px,
+    transparent 1px
+  );
+  background-size: 40px 40px;
+  background-position: center center;
+  /* Horizontal mask - ~800px visible center */
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 30%,
+    black 70%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 30%,
+    black 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Glow Effects */
