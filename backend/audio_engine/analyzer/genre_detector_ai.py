@@ -253,6 +253,13 @@ class AIGenreDetector:
         else:
             mono = audio.astype(np.float32)
         
+        # MEMORY OPTIMIZATION: Only analyze first 30 seconds
+        # This is enough to detect genre and saves RAM
+        max_samples = int(self.sample_rate * 30)  # 30 seconds
+        if len(mono) > max_samples:
+            mono = mono[:max_samples]
+            logger.info(f"Trimmed audio to 30 seconds for genre detection")
+        
         # Normalize to [-1, 1]
         if np.max(np.abs(mono)) > 0:
             mono = mono / np.max(np.abs(mono))

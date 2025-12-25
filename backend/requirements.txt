@@ -24,8 +24,7 @@ pedalboard==0.9.8
 pyloudnorm==0.1.1
 pydub==0.25.1
 
-# Audio Processing - Analysis & AI Genre Detection
-# essentia-tensorflow only works on Linux (Railway)
+# Audio Processing - Analysis with TensorFlow AI
 essentia-tensorflow
 
 # Audio Processing - Advanced
