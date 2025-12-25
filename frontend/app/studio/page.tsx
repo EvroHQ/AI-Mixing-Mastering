@@ -76,13 +76,30 @@ export default function StudioPage() {
     }
   };
 
-  const handleFilesSelected = async (files: File[]) => {
-    setUploadedFiles(files);
+  // Add files to the list (without starting analysis)
+  const handleFilesSelected = (files: File[]) => {
+    setUploadedFiles((prev) => {
+      // Avoid duplicates
+      const existingNames = new Set(prev.map((f) => f.name));
+      const newFiles = files.filter((f) => !existingNames.has(f.name));
+      return [...prev, ...newFiles];
+    });
+  };
+
+  // Remove a file from the list
+  const handleRemoveFile = (index: number) => {
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Start genre analysis when user clicks the button
+  const handleStartAnalysis = async () => {
+    if (uploadedFiles.length === 0) return;
+
     setStatus("analyzing");
 
     // Create FormData for genre analysis
     const formData = new FormData();
-    files.forEach((file) => {
+    uploadedFiles.forEach((file) => {
       formData.append("files", file);
     });
 
@@ -259,8 +276,8 @@ export default function StudioPage() {
                   </h2>
                 </div>
                 <p className="text-gray-400 mb-6">
-                  Upload your audio stems and our AI will automatically detect
-                  the genre and apply the optimal mixing and mastering settings.
+                  Upload your audio stems. You can add multiple files, then
+                  click "Start Analysis" when ready.
                 </p>
                 <UploadWidget
                   onUploadComplete={handleUploadComplete}
@@ -268,6 +285,78 @@ export default function StudioPage() {
                   onFilesSelected={handleFilesSelected}
                   skipAutoUpload={true}
                 />
+
+                {/* Uploaded Files List */}
+                {uploadedFiles.length > 0 && (
+                  <div className="mt-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold text-white">
+                        {uploadedFiles.length} Stems Ready
+                      </h3>
+                      <button
+                        onClick={() => setUploadedFiles([])}
+                        className="text-sm text-gray-500 hover:text-red-400 transition-colors"
+                      >
+                        Clear all
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                      {uploadedFiles.map((file, index) => {
+                        const name = file.name.toLowerCase();
+                        const getIcon = () => {
+                          if (name.includes("vocal") || name.includes("voice"))
+                            return "🎤";
+                          if (name.includes("drum") || name.includes("beat"))
+                            return "🥁";
+                          if (name.includes("bass")) return "🎸";
+                          if (
+                            name.includes("synth") ||
+                            name.includes("key") ||
+                            name.includes("piano")
+                          )
+                            return "🎹";
+                          if (name.includes("guitar")) return "🎸";
+                          if (name.includes("perc")) return "🪘";
+                          return "🎵";
+                        };
+                        return (
+                          <div
+                            key={index}
+                            className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 group"
+                          >
+                            <span className="text-lg">{getIcon()}</span>
+                            <span className="text-sm text-gray-300 truncate flex-1">
+                              {file.name.replace(/\.(wav|mp3|aiff|flac)$/i, "")}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {(file.size / 1024 / 1024).toFixed(1)}MB
+                            </span>
+                            <button
+                              onClick={() => handleRemoveFile(index)}
+                              className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Start Analysis Button */}
+                    <button
+                      onClick={handleStartAnalysis}
+                      className="w-full group relative overflow-hidden cursor-pointer"
+                    >
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 opacity-75 group-hover:opacity-100 transition-opacity"></div>
+                      <div className="relative px-8 py-4 rounded-xl bg-black m-[2px] flex items-center justify-center gap-3 group-hover:bg-black/80 transition-colors">
+                        <Sparkles className="w-5 h-5 text-purple-400 group-hover:text-pink-400 transition-colors" />
+                        <span className="font-bold text-white text-lg">
+                          Start AI Genre Analysis
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="card">
