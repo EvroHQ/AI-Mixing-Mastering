@@ -85,16 +85,58 @@ export default function ProcessingStatus({
     <div className="card">
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="relative w-20 h-20 mx-auto mb-6">
-          {/* Spinning ring */}
-          <div className="absolute inset-0 rounded-full border-4 border-white/10 border-t-purple-500 animate-spin"></div>
-          {/* Center icon */}
-          <div className="absolute inset-3 rounded-full bg-white/5 flex items-center justify-center">
-            <Music className="w-8 h-8 text-purple-400" />
-          </div>
+        {/* Animated Equalizer Visualization */}
+        <div className="relative w-48 h-32 mx-auto mb-6 flex items-end justify-center gap-1">
+          {/* Equalizer Bars */}
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={i}
+              className="equalizer-bar"
+              style={{
+                animationDelay: `${i * 0.1}s`,
+                height: "100%",
+              }}
+            />
+          ))}
+          {/* Glow overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-purple-500/20 to-transparent blur-xl" />
         </div>
 
-        <h2 className="text-2xl font-bold mb-2">AI Processing</h2>
+        {/* Waveform Animation */}
+        <div className="relative w-full h-16 mb-6 overflow-hidden rounded-xl bg-white/5">
+          <div className="waveform-container">
+            <svg
+              className="waveform-svg"
+              viewBox="0 0 200 40"
+              preserveAspectRatio="none"
+            >
+              <path
+                className="waveform-path"
+                d="M0 20 Q 10 10, 20 20 T 40 20 T 60 20 T 80 20 T 100 20 T 120 20 T 140 20 T 160 20 T 180 20 T 200 20"
+                fill="none"
+                stroke="url(#waveGradient)"
+                strokeWidth="2"
+              />
+              <defs>
+                <linearGradient
+                  id="waveGradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
+                  <stop offset="0%" stopColor="#a855f7" />
+                  <stop offset="50%" stopColor="#ec4899" />
+                  <stop offset="100%" stopColor="#a855f7" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          {/* Scanning line */}
+          <div className="scan-line" />
+        </div>
+
+        <h2 className="text-2xl font-bold mb-2">Processing...</h2>
         <p className="text-gray-500">
           Professional mixing & mastering in progress
         </p>

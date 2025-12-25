@@ -275,8 +275,14 @@ class StudioCompressor:
         else:
             sidechain_filtered = sidechain
         
-        # Calculate envelope of sidechain
-        envelope = self._calculate_envelope(sidechain_filtered, attack_ms, release_ms)
+        # Convert stereo to mono for envelope calculation
+        if sidechain_filtered.ndim > 1:
+            sidechain_mono = np.mean(sidechain_filtered, axis=0)
+        else:
+            sidechain_mono = sidechain_filtered
+        
+        # Calculate envelope of sidechain (must be mono)
+        envelope = self._calculate_envelope(sidechain_mono, attack_ms, release_ms)
         
         # Calculate gain reduction
         envelope_db = 20 * np.log10(np.abs(envelope) + 1e-10)

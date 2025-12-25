@@ -108,10 +108,15 @@ class AudioPipeline:
         rough_mix = self._create_rough_mix(stems)
         
         # Detect genre or use override
-        if genre_override and genre_override in GenrePresets.list_genres():
+        valid_genres = GenrePresets.list_genres()
+        print(f"[PIPELINE] genre_override = {genre_override}")
+        print(f"[PIPELINE] valid_genres = {valid_genres}")
+        print(f"[PIPELINE] override valid? {genre_override in valid_genres if genre_override else 'N/A'}")
+        
+        if genre_override and genre_override in valid_genres:
             detected_genre = genre_override
             genre_confidence = 1.0
-            logger.info(f"Using user-specified genre: {genre_override}")
+            print(f"[PIPELINE] Using user-specified genre: {genre_override}")
             genre_result = {
                 'detected_genre': detected_genre,
                 'genre_name': GenrePresets.get_mixing_preset(detected_genre)['name'],

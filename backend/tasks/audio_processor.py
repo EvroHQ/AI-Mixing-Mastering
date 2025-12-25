@@ -55,6 +55,12 @@ def process_audio_job(self, job_id: str, stem_urls: List[str], genre_override: s
         # Update job status
         self.update_state(state='PROGRESS', meta={'progress': 0, 'stage': 'initializing'})
         
+        # Log genre override
+        if genre_override:
+            print(f"[WORKER] Genre override received: {genre_override}")
+        else:
+            print(f"[WORKER] No genre override - will auto-detect")
+        
         # Initialize components
         b2_client = B2Client()
         pipeline = AudioPipeline(sample_rate=settings.SAMPLE_RATE)
@@ -98,10 +104,26 @@ def process_audio_job(self, job_id: str, stem_urls: List[str], genre_override: s
                 """Callback for pipeline progress updates"""
                 # Map pipeline progress (0-100) to our range (15-90)
                 celery_progress = 15 + int(progress * 0.75)
+                
+                # Normalize stage names for frontend
+                stage_lower = stage.lower()
+                if "load" in stage_lower or "stem" in stage_lower:
+                    normalized_stage = "downloading"
+                elif "genre" in stage_lower or "analyz" in stage_lower:
+                    normalized_stage = "processing"
+                elif "mix" in stage_lower:
+                    normalized_stage = "mixing"
+                elif "master" in stage_lower:
+                    normalized_stage = "mastering"
+                elif "export" in stage_lower or "upload" in stage_lower:
+                    normalized_stage = "uploading"
+                else:
+                    normalized_stage = "processing"
+                
                 self.update_state(state='PROGRESS', meta={
                     'progress': celery_progress,
-                    'stage': stage,
-                    'detail': f'{stage}...'
+                    'stage': normalized_stage,
+                    'detail': stage
                 })
             
             # Process audio with genre-aware pipeline

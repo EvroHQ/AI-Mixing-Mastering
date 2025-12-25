@@ -192,6 +192,9 @@ export default function StudioPage() {
     // Add genre if selected
     if (selectedGenre) {
       formData.append("genre", selectedGenre);
+      console.log("Sending genre:", selectedGenre);
+    } else {
+      console.log("No genre selected - will auto-detect");
     }
 
     // Add target LUFS
@@ -309,7 +312,7 @@ export default function StudioPage() {
           {/* Title */}
           <div className="text-center mb-16 animate-fade-in">
             <h1 className="text-6xl font-bold mb-6 glow-text">
-              AI Mix & Master{" "}
+              Mixing & Mastering{" "}
               <span className="text-gradient-accent">Studio</span>
             </h1>
             <p className="text-xl text-gray-400">
