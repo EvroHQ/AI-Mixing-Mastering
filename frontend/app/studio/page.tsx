@@ -110,9 +110,42 @@ export default function StudioPage() {
 
     setStatus("analyzing");
 
-    // Create FormData for genre analysis
+    // Smart file selection: select up to 3 key stems most indicative of genre
+    // Priority order: drums/kicks first, then bass, then percussion
+    const keywordGroups = [
+      ["drum", "kick", "beat", "hihat", "snare"], // Drums - most genre-indicative
+      ["bass", "sub", "808"], // Bass
+      ["perc", "clap", "hat", "cymbal"], // Percussion
+      ["loop", "full", "mix", "master"], // Full mix if available
+    ];
+
+    const selectedFiles: File[] = [];
+    const usedFiles = new Set<string>();
+
+    // Select one file from each priority group (up to 3 total)
+    for (const keywords of keywordGroups) {
+      if (selectedFiles.length >= 3) break;
+
+      for (const file of uploadedFiles) {
+        if (usedFiles.has(file.name)) continue;
+
+        const name = file.name.toLowerCase();
+        if (keywords.some((kw) => name.includes(kw))) {
+          selectedFiles.push(file);
+          usedFiles.add(file.name);
+          break; // Only one per group
+        }
+      }
+    }
+
+    // If no matching files found, use the largest file (likely a mix)
+    if (selectedFiles.length === 0) {
+      const largest = [...uploadedFiles].sort((a, b) => b.size - a.size)[0];
+      selectedFiles.push(largest);
+    }
+
     const formData = new FormData();
-    uploadedFiles.forEach((file) => {
+    selectedFiles.forEach((file) => {
       formData.append("files", file);
     });
 
